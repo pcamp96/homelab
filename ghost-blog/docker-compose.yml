@@ -31,4 +31,4 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: SuperSecurePassword
     volumes:
-      - /docker/ghost/mysql:/var/lib/mysql
+      - /portainer/ghost/mysql:/var/lib/mysql

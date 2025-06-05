@@ -1,0 +1,119 @@
+# Docker Compose file for Portainer
+# Deploys Nginx Proxy Manager, Cloudflare DDNS, and Ghost
+
+version: '3.8' # Specifies the Docker Compose file format version
+
+services:
+  # Nginx Proxy Manager Service
+  # Web interface for managing Nginx proxy hosts with SSL termination
+  npm:
+    image: 'jlesage/nginx-proxy-manager:latest' # Uses the latest official Nginx Proxy Manager image
+    container_name: nginx-proxy-manager
+    restart: unless-stopped # Restarts the container unless it's manually stopped
+    ports:
+      # These ports are exposed to the host machine
+      - '8080:8080'   # Standard HTTP port
+      - '4443:4443' # Standard HTTPS port
+      - '8181:8181'   # Nginx Proxy Manager admin interface port
+    volumes:
+      # Persistent storage for Nginx Proxy Manager data, custom configurations, and SSL certificates
+      - /portainer/npm/config:/config
+    networks:
+      - proxy-network # Connects to the custom proxy network
+    depends_on:
+      - cloudflare-ddns # Optional: ensures cloudflare-ddns starts first, though not strictly necessary for NPM to run
+      - ghost # Ensures ghost container is started before npm attempts to proxy to it (good practice)
+
+  # Cloudflare DDNS Service
+  # Automatically updates your Cloudflare DNS records with your dynamic public IP address
+  cloudflare-ddns:
+    image: 'oznu/cloudflare-ddns:latest' # Uses a popular and reliable Cloudflare DDNS image
+    container_name: cloudflare-ddns
+    restart: unless-stopped # Restarts the container unless it's manually stopped
+    environment:
+      # --- REQUIRED - CHOOSE ONE AUTHENTICATION METHOD ---
+      # Method 1: API Token (Recommended)
+      # - Generate a token with 'Zone:Zone:Read' and 'Zone:DNS:Edit' permissions for the specific zone(s)
+      - CF_API_TOKEN=YOUR_CLOUDFLARE_API_TOKEN_HERE
+      # Method 2: Global API Key (Less Secure - Not Recommended for most users)
+      # - CF_API_KEY=YOUR_CLOUDFLARE_GLOBAL_API_KEY_HERE # (Example: if you choose this, comment out CF_API_TOKEN)
+      # - CF_EMAIL=YOUR_CLOUDFLARE_EMAIL_HERE           # (Required if using Global API Key)
+
+      # --- REQUIRED - DOMAIN AND SUBDOMAIN CONFIGURATION ---
+      # - Replace 'yourdomain.com' with your actual domain
+      # - For multiple domains/subdomains, separate them with commas
+      #   e.g., - CF_ZONE_NAME=yourdomain.com,anotherdomain.org
+      #   e.g., - CF_SUBDOMAIN_NAME=sub1,sub2,www
+      #   e.g., - CF_PROXIED=true,false,true (must match the number of subdomains)
+      - CF_ZONE_NAME=yourdomain.com # e.g., yourdomain.com
+      - CF_SUBDOMAIN_NAME=@ # The A record to update (e.g., subdomain.yourdomain.com or @ for root)
+      # - Set to 'true' to proxy traffic through Cloudflare (orange cloud), 'false' for DNS only (grey cloud)
+      - CF_PROXIED=true # or false, depending on your needs
+
+      # --- OPTIONAL SETTINGS ---
+      # - How often to check for IP changes (in minutes). Default is 5 minutes.
+      # - CF_UPDATE_INTERVAL=5
+      # - Timezone for logging. Default is UTC.
+      # - TZ=America/New_York
+      # - Log level (e.g., info, debug, error). Default is info.
+      # - LOG_LEVEL=info
+    networks:
+      - proxy-network # Connects to the custom proxy network
+
+  # Ghost Blog Service
+  # Professional publishing platform
+  ghost-server:
+    image: ghost:5 # Specifies Ghost version 5
+    container_name: ghost-server
+    cap_add:
+      - CAP_SYS_NICE
+    security_opt:
+      - seccomp:unconfined
+    restart: always
+    ports:
+      # Port 2368 is Ghost's default port.
+      # Nginx Proxy Manager will connect to this port internally.
+      # Exposing it to the host is optional if only accessing through NPM.
+      - '2368:2368'
+    depends_on:
+      - ghost-db # Ensures the database is started before Ghost
+    environment:
+      # IMPORTANT: Update this URL to your actual public domain for Ghost
+      url: https://yourdomain.com
+      database__client: mysql
+      database__connection__host: ghost-db # Connects to the ghost-db service name
+      database__connection__user: root
+      # IMPORTANT: Change this password and ensure it matches MYSQL_ROOT_PASSWORD in ghost-db
+      database__connection__password: SuperSecurePassword
+      database__connection__database: ghost-database
+    volumes:
+      # IMPORTANT: Ensure the host path '/portainer/ghost/content' exists on your Docker host
+      # or change it to a named volume or a different host path.
+      - /portainer/ghost/content:/var/lib/ghost/content
+    networks:
+      - proxy-network
+
+  # Ghost Database Service (MySQL)
+  ghost-db:
+    image: mysql:8 # Specifies MySQL version 8
+    container_name: ghost-mysql-database
+    security_opt:
+      - seccomp:unconfined
+    restart: always
+    command: --mysql-native-password=ON # Enables native password authentication
+    environment:
+      # IMPORTANT: Change this password and ensure it matches database__connection__password in ghost-server
+      MYSQL_ROOT_PASSWORD: SuperSecurePassword
+      MYSQL_DATABASE: ghost-database # Optional: Creates the database on startup
+    volumes:
+      # IMPORTANT: Ensure the host path '/docker/ghost/mysql' exists on your Docker host
+      # or change it to a named volume or a different host path.
+      - /portainer/ghost/mysql:/var/lib/mysql
+    networks:
+      - proxy-network
+
+# Define a custom Docker network
+# This allows containers to communicate with each other by their service names
+networks:
+  proxy-network:
+    driver: bridge # Uses the default bridge driver for the network
