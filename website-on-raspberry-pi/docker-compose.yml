@@ -22,7 +22,7 @@ services:
       - proxy-network # Connects to the custom proxy network
     depends_on:
       - cloudflare-ddns # Optional: ensures cloudflare-ddns starts first, though not strictly necessary for NPM to run
-      - ghost # Ensures ghost container is started before npm attempts to proxy to it (good practice)
+      - ghost-server # Ensures ghost container is started before npm attempts to proxy to it (good practice)
 
   # Cloudflare DDNS Service
   # Automatically updates your Cloudflare DNS records with your dynamic public IP address
