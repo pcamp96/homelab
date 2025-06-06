@@ -1,5 +1,5 @@
 # Docker Compose file for Portainer
-# Deploys Nginx Proxy Manager, Cloudflare DDNS, and Ghost
+# Deploys Nginx Proxy Manager, ddclient, and Ghost with a dedicated MySQL database
 
 version: '3.8' # Specifies the Docker Compose file format version
 
@@ -21,42 +21,21 @@ services:
     networks:
       - proxy-network # Connects to the custom proxy network
     depends_on:
-      - cloudflare-ddns # Optional: ensures cloudflare-ddns starts first, though not strictly necessary for NPM to run
-      - ghost-server # Ensures ghost container is started before npm attempts to proxy to it (good practice)
+      - ddclient # Ensures ddclient is started before npm attempts to proxy to it
+      - ghost-server # Ensures ghost server is started before npm attempts to proxy to it
 
-  # Cloudflare DDNS Service
+  # ddclient Service for Dynamic DNS
   # Automatically updates your Cloudflare DNS records with your dynamic public IP address
-  cloudflare-ddns:
-    image: 'oznu/cloudflare-ddns:latest' # Uses a popular and reliable Cloudflare DDNS image
-    container_name: cloudflare-ddns
+  ddclient:
+    image: 'ddclient/ddclient:latest' # Uses a popular and reliable Dynamic DDNS image
+    container_name: ddclient
     restart: unless-stopped # Restarts the container unless it's manually stopped
     environment:
-      # --- REQUIRED - CHOOSE ONE AUTHENTICATION METHOD ---
-      # Method 1: API Token (Recommended)
-      # - Generate a token with 'Zone:Zone:Read' and 'Zone:DNS:Edit' permissions for the specific zone(s)
-      - CF_API_TOKEN=YOUR_CLOUDFLARE_API_TOKEN_HERE
-      # Method 2: Global API Key (Less Secure - Not Recommended for most users)
-      # - CF_API_KEY=YOUR_CLOUDFLARE_GLOBAL_API_KEY_HERE # (Example: if you choose this, comment out CF_API_TOKEN)
-      # - CF_EMAIL=YOUR_CLOUDFLARE_EMAIL_HERE           # (Required if using Global API Key)
-
-      # --- REQUIRED - DOMAIN AND SUBDOMAIN CONFIGURATION ---
-      # - Replace 'yourdomain.com' with your actual domain
-      # - For multiple domains/subdomains, separate them with commas
-      #   e.g., - CF_ZONE_NAME=yourdomain.com,anotherdomain.org
-      #   e.g., - CF_SUBDOMAIN_NAME=sub1,sub2,www
-      #   e.g., - CF_PROXIED=true,false,true (must match the number of subdomains)
-      - CF_ZONE_NAME=yourdomain.com # e.g., yourdomain.com
-      - CF_SUBDOMAIN_NAME=@ # The A record to update (e.g., subdomain.yourdomain.com or @ for root)
-      # - Set to 'true' to proxy traffic through Cloudflare (orange cloud), 'false' for DNS only (grey cloud)
-      - CF_PROXIED=true # or false, depending on your needs
-
-      # --- OPTIONAL SETTINGS ---
-      # - How often to check for IP changes (in minutes). Default is 5 minutes.
-      # - CF_UPDATE_INTERVAL=5
-      # - Timezone for logging. Default is UTC.
-      # - TZ=America/New_York
-      # - Log level (e.g., info, debug, error). Default is info.
-      # - LOG_LEVEL=info
+      # Set your timezone to get accurate timestamps in logs
+      - TZ=Etc/UTC # Example: America/New_York, Europe/London, Etc/UTC
+    volumes:
+      # Mounts the configuration file from the host into the container
+      - /portainer/ddclient/ddclient.conf:/etc/ddclient/ddclient.conf:ro
     networks:
       - proxy-network # Connects to the custom proxy network
 
@@ -88,7 +67,6 @@ services:
       database__connection__database: ghost-database
     volumes:
       # IMPORTANT: Ensure the host path '/portainer/ghost/content' exists on your Docker host
-      # or change it to a named volume or a different host path.
       - /portainer/ghost/content:/var/lib/ghost/content
     networks:
       - proxy-network
@@ -106,8 +84,7 @@ services:
       MYSQL_ROOT_PASSWORD: SuperSecurePassword
       MYSQL_DATABASE: ghost-database # Optional: Creates the database on startup
     volumes:
-      # IMPORTANT: Ensure the host path '/docker/ghost/mysql' exists on your Docker host
-      # or change it to a named volume or a different host path.
+      # IMPORTANT: Ensure the host path '/portainer/ghost/mysql' exists on your Docker host
       - /portainer/ghost/mysql:/var/lib/mysql
     networks:
       - proxy-network
