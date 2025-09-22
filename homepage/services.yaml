@@ -1,0 +1,151 @@
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/services/
+- Unifi Dream Router 7:
+    - Unifi Controller:
+        href: unifi-ip
+        description: Unifi Controller
+        icon: unifi.svg
+        widget:
+            type: unifi
+            url: unifi-ip
+            username: username
+            password: password
+            #site: Site Name # optional
+- IPMI:
+    - Lenovo RD440:
+        href: https://192.168.0.22
+        description: Lenovo RD440 IPMI
+        icon: https://cdn.brandfetch.io/iddtMrgJvA/w/400/h/400/theme/dark/icon.png?c=1dxbfHSJFAPEGdCLU4o5B
+- R720:
+    - Proxmox:
+        - Proxmox:
+            href: https://192.168.0.5:8006/
+            description: Managing VMs one instance at a time
+            icon: proxmox.svg
+
+    - Portainer:
+        - Portainer:
+            href: portainer-ip
+            description: Managing Docker the fun way
+            icon: portainer.svg
+            widget:
+                type: portainer
+                url: portainer-ip
+                env: 3
+                key: key
+        - Speedtest-Tracker:
+            href: speedtest-trackerip
+            icon: speedtest-tracker.png
+            description: Internet speed logging
+            widget:
+                type: speedtest
+                url: speedtest-trackerip
+                version: 2
+                key: key
+        - AudioBookShelf:
+            href: audiobookshelfip
+            icon: audiobookshelf.svg
+            description: Audiobook server
+            widget:
+                type: audiobookshelf
+                url: audiobookshelfip
+                fields: ["books", "booksDuration"]
+                key: key
+        - Scrypted:
+            href: https://192.168.0.6:10443/
+            icon: scrypted.webp
+            description: Home camera server
+        - Home Assistant:
+            href: http://192.168.0.6:8123/
+            icon: home-assistant.svg
+            description: A smarter smart home   
+        - Pi-Hole:
+            href: https://192.168.0.6:441/admin/login
+            description: Network-wide ad blocking (On Portainer)
+            icon: pi-hole.svg
+            widget:
+                type: pihole
+                url: https://192.168.0.6:441
+                version: 6 # required if running v6 or higher, defaults to 5
+                key: key # optional, in v6 can be your password or app password
+        - Plex:
+            href: http://192.168.0.6:32400/manage
+            icon: plex.svg
+            description: Media server
+        - Tautulli:
+            href: tautulliip
+            icon: tautulli.svg
+            description: Plex tracker
+            widget:
+                type: tautulli
+                url: tautulliip
+                key: key
+                enableUser: true # optional, defaults to false
+                showEpisodeNumber: true # optional, defaults to false
+                expandOneStreamToTwoRows: false # optional, defaults to true
+        - Nginx Proxy Manager:
+            href: nginxip
+            icon: nginx-proxy-manager.svg
+            description: Reverse proxy manager
+            widget:
+                type: npm
+                url: nginxip
+                username: username
+                password: password
+        - OpenSpeedtest:
+            href: https://192.168.0.6:3001
+            icon: openspeedtest.svg
+            description: My own SpeedTest server for 2.5G
+        - Sonarr:
+            href: sonarrip
+            icon: sonarr.svg
+            description: TV media management
+            widget:
+                type: sonarr
+                url: sonarrip
+                key: key
+                enableQueue: false # optional, defaults to false
+        - Radarr 1080p:
+            href: radarrip
+            icon: radarr.svg
+            description: 1080p movie media management
+            widget:
+                type: radarr
+                url: radarrip
+                key: key
+                enableQueue: false # optional, defaults to false
+        - Radarr 4K:
+            href: radarrip
+            icon: radarr.svg
+            description: 4K movie media management
+            widget:
+                type: radarr
+                url: radarrip
+                key: key
+                enableQueue: false # optional, defaults to true
+- i9-13900K:
+    - Proxmox:
+        href: https://192.168.0.231:8006/
+        description: Managing VMs one instance at a time
+        icon: proxmox.svg
+- Raspberry Pi 3b:
+    - Pi-Hole:
+        href: https://192.168.0.7/admin
+        description: Network-wide ad blocking (On a Pi)
+        icon: pi-hole.svg
+        widget:
+            type: pihole
+            url: https://192.168.0.7
+            version: 6
+    - Portainer:
+        href: https://192.168.0.7:9443
+        description: Managing Docker the fun way
+        icon: portainer.svg
+    - Uptime-Kuma:
+        href: uptime-kuma-ip
+        icon: uptime-kuma.svg
+        description: Uptime monitor
+        widget:
+            type: uptimekuma
+            url: uptime-kuma-ip
+            slug: uptime

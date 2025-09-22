@@ -1,0 +1,48 @@
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/settings/
+
+
+background:
+  #image: https://images.unsplash.com/photo-1502790671504-542ad42d5189?auto=format&fit=crop&w=2560&q=80
+  image: https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
+  blur: sm # sm, "", md, xl... see https://tailwindcss.com/docs/backdrop-blur
+  saturate: 50 # 0, 50, 100... see https://tailwindcss.com/docs/backdrop-saturate
+  brightness: 50 # 0, 50, 75... see https://tailwindcss.com/docs/backdrop-brightness
+  opacity: 50 # 0-100
+
+
+# cardBlur: sm # sm, "", md, etc... see https://tailwindcss.com/docs/backdrop-blur
+
+showStats: true
+statusStyle: "dot"
+hideErrors: true
+hideVersion: true
+theme: dark
+color: slate
+providers:
+  openweathermap: openweathermapapikey
+  weatherapi: weatherapiapikey
+
+layout:
+  Unifi Dream Router 7:
+    style: row
+    columns: 1
+    icon: unifi.svg
+    #tab: Networking
+  IPMI:
+    style: row
+    columns: 3
+    icon: urbackup-server.png
+    #tab: Networking
+  RD440:
+    icon: unraid.svg
+    #tab: Unraid
+  R720:
+    icon: proxmox.svg
+    #tab: Apps
+  R720xd:
+    icon: unraid.svg
+    #tab: Unraid
+  Raspberry Pi 3b:
+    icon: pi-hole.svg
+    #tab: Networking
