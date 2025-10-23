@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  haven:
+    image: ghcr.io/havenweb/haven:latest
+    container_name: haven
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - RAILS_ENV=production
+      - HAVEN_DB_HOST=postgresql
+      - HAVEN_DB_NAME=haven
+      - HAVEN_DB_ROLE=haven
+      - HAVEN_DB_PASSWORD=supersecretrandomstring
+      - HAVEN_USER_EMAIL=you@example.com
+      - HAVEN_USER_PASS=ChangeMeN0W
+    depends_on:
+      - postgresql
+    volumes:
+      - haven_storage:/storage
+
+  postgresql:
+    image: postgres:13-alpine
+    container_name: haven_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=haven
+      - POSTGRES_PASSWORD=supersecretrandomstring
+      - POSTGRES_DB=haven
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  haven_storage:
+  postgres_data:
